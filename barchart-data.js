@@ -1,3 +1,6 @@
+// Barchart data pulled from the exercise on:
+//  https://beta.observablehq.com/@sxywu/data-visualization-for-react-developers-starter
+
 barChartData = {
   console.log(width);
   // 1. Get min and max of the date
