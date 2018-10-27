@@ -379,6 +379,136 @@ Child components only are responsible for rendering data to the screen.
 **Main Takeaway**
 D3 calculations can go **anywhere**, as long as React can access it in it's render function.  
 
+
+## Axes
+
+Example Code:
+
+```javascript
+// Create axisLeft or axisBottom at the beginning of React lifecycle
+//   and set corresponding scale
+const yAxis = d3.axisLeft()
+  .scale(yScale);
+
+// create SVG group element in render
+<g ref='group' />
+
+// Call axis on the group element in componentDidUpdate
+d3.select(this.refs.group)
+  .call(yAxis);
+```
+
+## D3 Render Transitions*
+
+Example Code:
+
+```javascript
+
+// in componentDidUpdate
+
+// Select elements to update
+d3.select(this.refs.bars)
+  .selectAll('rect') // get all the rectangles
+  .data(this.state.bars) // Bind the data
+  .transition() // Call d3's transition method
+  .attr('y', d => d.y) // set attributes to transition
+  .attr('height', d => d.height)
+  .attr('fill', d => d.fill);
+
+// in render()
+<g ref='bars'>
+  {this.state.bars.map((d, i) => (<rect key={i} x={d.x} width='2' /> ))}
+</g>
+```
+
+**Note above, that React doesn't see the attributes that d3 is transitioning**.  For example: `y`, `height`, and `fill`
+
+This works, it's performant, but it's ugly.  Not highly recommended.  
+
+You can also just put a group `<g>` element into `render` and have D3 insert elements into that group, so React sees nothing.  Doing the enter, update, exit from D3.  
+
+
+## Brushes 
+
+Brushes are a way to interact with a chart and filter-down data.
+
+Example code:
+
+```javascript
+// In componentDidMount
+this.brush = d3.brush() // create brush instance
+  .extent([[0, 0], [width, height]]) // define brushable area
+  .on('end', () => console.log('your code goes here!'));
+
+// Personal note, I would also take into account the margins here
+
+
+d3.select(this.refs.brush)
+  .call(this.brush)
+
+
+// in render
+```
+
+
+## Readibility
+
+Legends are useful to really helpful especially with colored data
+
+Checkout Resources on Legends and annotation: 
+
+- [d3-legend by Susie Lu](https://d3-legend.susielu.com/)
+- [react-annotation by Susie Lu](https://react-annotation.susielu.com/)
+
+Frameworks combining React & D3
+
+- [React + D3 = VX](https://github.com/hshoff/vx) which is out of AirBNB
+- [Semiotic](https://github.com/emeeks/semiotic) - This is done in layers of visual elements, bars axes, etc.  Lets you quickly prototype.
+
+
+
+## Canvas
+
+This is important for large datasets.  More than 2K SVG nodes, you should use a canvas.
+
+**if you do have more than 2K nodes, you should probably filter or aggregate the data down a bit**.  
+
+Example Code:
+
+```JavaScript
+// in render
+<canvas ref='canvas'
+  style={{width: `${width}px, height: `${height}px }} 
+  // retina screen friendly???
+  // otherwise the edges get blurry for some reason
+  width={2 * width} height={2 * height }
+  />
+
+  // in componentDidMount
+  ctx = this.refs.canvas.getContext('2d')
+```
+
+
+This is performant because only one DOM element that we're drawing shapes on.  
+
+### Drawing on a canvas
+
+```JavaScript
+// rectangle
+ctx.fillRect(x, y, width, height)
+// or ctx.strokeRect(x, y, width, height)
+
+// Circle
+ctx.beginPath()
+ctx.arc(x, y, radius, startAngle, endAngle, anticlockwise)
+ctx.fill() // or ctx.stroke()
+
+// line
+ctx.beginPath()
+// moveTo, lineTo, bezierCurveTo
+ctx.fill() // or ctx.stroke
+```
+
 ## Resources
 
 [blockbuilder.org](blockbuilder.org) - Sandbox resource
